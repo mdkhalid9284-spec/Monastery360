@@ -7,8 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://i.postimg.cc" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://i.postimg.cc">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+    <script src="https://unpkg.com/i18next@23.11.5/dist/umd/i18next.min.js"></script>
+    <script src="https://unpkg.com/i18next-browser-languagedetector@7.2.0/dist/umd/i18nextBrowserLanguageDetector.min.js"></script>
     <style>
         /* Custom Styles */
         body {
@@ -16,6 +23,7 @@
             background-color: #f8f7f4;
             color: #3d4f4b;
         }
+        
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Poppins', sans-serif;
         }
@@ -128,6 +136,13 @@
                     <span id="greeting-text" class="font-semibold text-teal-800"></span>
                     <button id="logout-btn" class="ml-4 text-sm text-red-600 hover:text-red-800 font-semibold transition">Logout</button>
                 </div>
+                <div class="hidden md:flex items-center">
+                    <select id="language-select" class="border border-gray-300 rounded-lg px-2 py-1 text-sm text-gray-700">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="ne">नेपाली</option>
+                    </select>
+                </div>
                 <button id="mobile-menu-btn" class="md:hidden text-teal-800">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-4 6h4"></path></svg>
                 </button>
@@ -148,6 +163,9 @@
             <nav class="flex flex-col space-y-4">
                 <a href="#" id="home-link-sidebar" class="text-lg text-gray-700 hover:text-teal-600 font-semibold transition-colors">Home</a>
                 <a href="#" id="discover-link-sidebar" class="text-lg text-gray-700 hover:text-teal-600 font-semibold transition-colors">Discover</a>
+                <a href="#" id="calendar-link-sidebar" class="text-lg text-gray-700 hover:text-teal-600 font-semibold transition-colors">Cultural Calendar</a>
+                <a href="#" id="map-link-sidebar" class="text-lg text-gray-700 hover:text-teal-600 font-semibold transition-colors">Map View</a>
+            <a href="#" id="archives-link-sidebar" class="text-lg text-gray-700 hover:text-teal-600 font-semibold transition-colors">Digital Archives</a>
                 <a href="#" class="text-lg text-gray-700 hover:text-teal-600 font-semibold transition-colors">Articles</a>
                 <a href="#" class="text-lg text-gray-700 hover:text-teal-600 font-semibold transition-colors">About Us</a>
             </nav>
@@ -164,22 +182,30 @@
             <div class="absolute inset-0 bg-black/50 z-10"></div>
             <div class="absolute inset-0 z-20 flex flex-col justify-center items-center">
                 <div class="container mx-auto px-6 text-center">
-                    <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4">Find Your Sanctuary</h1>
-                    <p class="text-lg md:text-xl mb-8">Discover serene monasteries and spiritual centers in Sikkim.</p>
+                    <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4" data-i18n="hero.title">Find Your Sanctuary</h1>
+                    <p class="text-lg md:text-xl mb-8" data-i18n="hero.subtitle">Discover serene monasteries and spiritual centers in Sikkim.</p>
                     <div class="max-w-xl mx-auto">
-                        <div class="flex items-center bg-white rounded-full shadow-lg p-2">
-                            <input type="text" placeholder="Search by name or location" class="w-full bg-transparent px-4 py-2 text-gray-800 focus:outline-none">
-                            <button class="bg-teal-700 hover:bg-teal-800 text-white font-bold py-2 px-6 rounded-full transition">Search</button>
+                        <div class="relative">
+                            <div class="flex items-center bg-white rounded-full shadow-lg p-2">
+                                <input id="hero-search-input" type="text" placeholder="Search by monastery name" class="w-full bg-transparent px-4 py-2 text-gray-800 focus:outline-none" autocomplete="off">
+                                <button id="hero-search-btn" class="bg-teal-700 hover:bg-teal-800 text-white font-bold py-2 px-6 rounded-full transition" data-i18n="actions.search">Search</button>
+                            </div>
+                            <div id="search-suggestions" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 text-left overflow-hidden z-30 text-gray-800"></div>
                         </div>
                     </div>
+                    <div class="mt-6 flex flex-wrap gap-3 justify-center"></div>
                 </div>
             </div>
             <button id="hero-prev-btn" class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 focus:outline-none transition z-20"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
             <button id="hero-next-btn" class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 focus:outline-none transition z-20"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
-            <button id="virtual-tour-btn" class="absolute top-6 right-6 bg-white/20 backdrop-blur-sm text-white font-bold py-2 px-4 rounded-lg border border-white/30 group hover:bg-white/30 transition-all duration-300 z-20">
-                <span class="group-hover:hidden">Virtual Tours</span>
-                <span class="hidden group-hover:inline">Enter 360° Virtual Tour!</span>
+            <div class="absolute top-6 right-6 flex flex-col gap-3 z-20">
+            <button id="map-hero-btn" class="bg-white/20 backdrop-blur-sm text-white font-semibold py-2 px-4 rounded-lg border border-white/30 hover:bg-white/30 transition-all duration-300" data-i18n="nav.map">Map View</button>
+            <button id="virtual-tour-btn" class="bg-white/20 backdrop-blur-sm text-white font-bold py-2 px-4 rounded-lg border border-white/30 group hover:bg-white/30 transition-all duration-300">
+                <span class="group-hover:hidden" data-i18n="nav.virtualTours">Virtual Tours</span>
+                <span class="hidden group-hover:inline" data-i18n="nav.enterVirtual">Enter 360° Virtual Tour!</span>
             </button>
+            <button id="calendar-hero-btn" class="bg-white/20 backdrop-blur-sm text-white font-semibold py-2 px-4 rounded-lg border border-white/30 hover:bg-white/30 transition-all duration-300" data-i18n="nav.calendar">Cultural Calendar</button>
+            </div>
         </section>
 
         <!-- History Section -->
@@ -226,6 +252,259 @@
         </div>
     </section>
 
+    <!-- Cultural Calendar Page (Initially Hidden) -->
+    <section id="calendar-page" class="hidden py-10">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-6 theme-teal-text">Sikkim Cultural Calendar</h2>
+            <p class="text-center text-gray-600 mb-8">Explore important festivals and events across the year.</p>
+            <div class="calendar-embed">
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+                    .calendar-embed { font-family: 'Roboto', sans-serif; }
+                    .calendar-embed :root { --primary-color:#2C3E50; --secondary-color:#E74C3C; --accent-color:#F1C40F; --festival-bg:#A2D9CE; --background-color:#ECF0F1; --text-color:#34495E; --light-grey:#f0f0f0; --border-radius:12px; }
+                    .calendar-embed .scroll-container { overflow-x:auto; padding-bottom:15px; width:100%; }
+                    .calendar-embed .calendar-widget-container { width:100%; max-width:1100px; min-width:800px; background:#fff; border-radius:var(--border-radius); box-shadow:0 8px 30px rgba(0,0,0,0.12); margin:0 auto; }
+                    .calendar-embed .calendar-header { display:flex; justify-content:space-between; align-items:center; padding:20px 30px; background:linear-gradient(135deg,#34495E,#2C3E50); color:#fff; border-top-left-radius:var(--border-radius); border-top-right-radius:var(--border-radius); }
+                    .calendar-embed .calendar-header h2 { margin:0; font-size:2rem; font-weight:700; text-shadow:1px 1px 3px rgba(0,0,0,0.2); }
+                    .calendar-embed .nav-btn { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:50%; width:40px; height:40px; font-size:1.5rem; cursor:pointer; transition:background-color 0.3s, transform 0.2s; }
+                    .calendar-embed .nav-btn:hover { background-color:var(--secondary-color); transform:scale(1.1); }
+                    .calendar-embed .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background-color:#e0e0e0; padding:20px; }
+                    .calendar-embed .calendar-cell { padding:10px; text-align:center; background-color:#fff; font-size:0.9rem; min-height:90px; display:flex; flex-direction:column; justify-content:flex-start; align-items:center; position:relative; }
+                    .calendar-embed .day-name { font-weight:700; font-size:1rem; color:var(--primary-color); padding-bottom:10px; height:auto; min-height:0; justify-content:center; }
+                    .calendar-embed .day-number { font-size:1rem; padding-top:10px; }
+                    .calendar-embed .other-month { color:#ccc; }
+                    .calendar-embed .festival-day { background-color:var(--festival-bg); cursor:pointer; transition:background-color 0.3s; }
+                    .calendar-embed .festival-day:hover { background-color:var(--accent-color); }
+                    .calendar-embed .festival-marker { font-size:1.2rem; position:absolute; top:8px; right:8px; }
+                    .calendar-embed .today .day-number { background-color:var(--secondary-color); color:#fff; border-radius:50%; width:32px; height:32px; line-height:32px; display:inline-block; padding:0; }
+                    .calendar-embed .upcoming-events-container { padding:20px 30px; background-color:#f9f9f9; }
+                    .calendar-embed .upcoming-events-container h3 { margin-top:0; border-bottom:3px solid var(--primary-color); padding-bottom:10px; color:var(--primary-color); font-size:1.4rem; }
+                    .calendar-embed .upcoming-events-list { list-style:none; padding:0; margin:0; }
+                    .calendar-embed .upcoming-events-list li { padding:15px; border-radius:6px; margin-bottom:10px; cursor:pointer; transition:background-color 0.3s, transform 0.2s; background-color:#fff; border-left:5px solid var(--accent-color); font-weight:500; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+                    .calendar-embed .upcoming-events-list li:hover { background-color:#fff9e6; transform:translateX(5px); }
+                    .calendar-embed #no-events-msg { color:#888; text-align:center; padding:20px; }
+                    .calendar-embed .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }
+                    .calendar-embed .modal-content { background:#fff; padding:0; border-radius:var(--border-radius); width:90%; max-width:700px; position:relative; box-shadow:0 5px 20px rgba(0,0,0,0.2); max-height:90vh; overflow:hidden; display:flex; flex-direction:column; }
+                    .calendar-embed .modal-content h2 { margin:0; padding:20px 30px; background-color:var(--primary-color); color:white; }
+                    .calendar-embed .modal-body { padding:20px 30px; overflow-y:auto; }
+                    .calendar-embed .modal-content h4 { color:var(--secondary-color); margin-top:1em; margin-bottom:5px; }
+                    .calendar-embed .modal-close { position:absolute; top:15px; right:25px; font-size:2.2rem; cursor:pointer; color:rgba(255,255,255,0.7); transition:color 0.3s; font-weight:300; }
+                    .calendar-embed .modal-close:hover { color:#fff; }
+                    @media (max-width: 900px) { .calendar-embed .calendar-widget-container { min-width:0; } }
+                </style>
+                <div class="scroll-container">
+                    <div class='calendar-widget-container'>
+                        <div class='calendar-header'>
+                            <button id='prev-month' class='nav-btn'>&lt;</button>
+                            <h2 id='month-year'></h2>
+                            <button id='next-month' class='nav-btn'>&gt;</button>
+                        </div>
+                        <div class='calendar-grid'>
+                            <div class='calendar-cell day-name'>Sun</div><div class='calendar-cell day-name'>Mon</div><div class='calendar-cell day-name'>Tue</div><div class='calendar-cell day-name'>Wed</div><div class='calendar-cell day-name'>Thu</div><div class='calendar-cell day-name'>Fri</div><div class='calendar-cell day-name'>Sat</div>
+                        </div>
+                        <div class='calendar-grid' id='calendar-body'></div>
+                        <div class='upcoming-events-container'>
+                            <h3>Upcoming Events This Month</h3>
+                            <ul id='upcoming-events-list' class='upcoming-events-list'></ul>
+                        </div>
+                    </div>
+                </div>
+                <div id='festival-modal' class='modal-overlay'>
+                    <div class='modal-content'>
+                        <span id='modal-close-btn' class='modal-close'>&times;</span>
+                        <h2 id='modal-title'></h2>
+                        <div class='modal-body' id='modal-body'>
+                            <h4>History & Belief</h4><p id='modal-history'></p>
+                            <h4>Celebration</h4><p id='modal-celebration'></p>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    (function(){
+                        const festivals = [
+                            { name: 'Maghe Sankranti', date: '2025-01-14', history: 'Rooted in ancient Hindu traditions, it marks the sun’s transition into Capricorn. It signifies the end of winter solstice and the start of longer days.', celebration: 'Families take ritual dips in rivers, eat traditional foods like til (sesame) and gur (jaggery), and hold community fairs.' },
+                            { name: 'Namsoong Festival', date: '2025-01-10', history: 'Lepcha New Year, dating back centuries, celebrated to welcome a new harvest cycle and seek blessings from ancestors.', celebration: 'Traditional dances, archery competitions, and community feasts are held.' },
+                            { name: 'Losar (Tibetan New Year)', date: '2025-02-28', history: 'Introduced by Tibetan Buddhists in the 7th century, Losar is the most important Tibetan festival. It marks the start of a new lunar year.', celebration: 'Monasteries perform Cham dances, families clean and decorate homes, exchange gifts, and prepare traditional drinks (changkol).' },
+                            { name: 'Saga Dawa (Buddha Purnima)', date: '2025-06-12', history: 'Commemorates the three key events of Lord Buddha’s life — birth, enlightenment, and parinirvana (death).', celebration: 'Monks carry holy scriptures in processions, people light butter lamps, donate to the needy, and abstain from meat.' },
+                            { name: 'Nepali New Year', date: '2025-04-14', history: 'Marking the new year in the Nepali lunar calendar, it is also a harvest festival.', celebration: 'Fairs are organized with folk music and dances like Maruni. People wear new clothes and exchange greetings.' },
+                            { name: 'Drukpa Tshechi', date: '2025-07-21', history: 'Celebrates Lord Buddha’s first sermon at Sarnath where he taught the “Four Noble Truths.”', celebration: 'Monks perform sacred Cham dances in monasteries, and devotees offer prayers and butter lamps.' },
+                            { name: 'Tendong Lho Rum Faat', date: '2025-08-08', history: 'Ancient Lepcha festival, believed to recall how Tendong Hill saved the Lepcha people from a great flood by rising above the waters.', celebration: 'Offerings are made to Mount Tendong, Lepcha dances are performed, and prayers are held for nature’s protection.' },
+                            { name: 'Pang Lhabsol', date: '2025-09-10', history: 'Unique to Sikkim, instituted by the 3rd Chogyal (king) in the 13th century to honor Mount Kanchenjunga as the guardian deity of Sikkim.', celebration: 'The famous Chaam dance is performed with warriors in masks. Monks recite prayers while people join in with traditional feasts.' },
+                            { name: 'Indra Jatra', date: '2025-09-17', history: 'A Nepali festival dating back to ancient Kathmandu, honoring Lord Indra, the god of rain and prosperity.', celebration: 'In Sikkim, devotees organize community gatherings, dances, and prayers for good harvests.' },
+                            { name: 'Dasain (Dashain)', date: '2025-10-03', history: 'The largest Nepali Hindu festival, celebrating Goddess Durga’s victory over the demon Mahishasura, symbolizing good over evil.', celebration: 'Elders bless younger family members with tika (red vermillion) and jamara (sacred barley grass). Animal sacrifices, feasts, and fairs are also held.' },
+                            { name: 'Diwali / Tihar', date: '2025-10-22', history: 'In Hindu tradition, it marks the return of Lord Rama to Ayodhya. Among Nepalis, it’s also called Bhailo and Deusi.', celebration: 'Homes are decorated with lamps, prayers are offered to Goddess Laxmi, and groups sing Bhailo/Deusi songs while visiting homes at night.' },
+                            { name: 'Lhabab Düchen', date: '2025-11-13', history: 'Commemorates the event when Lord Buddha descended from heaven after preaching to his mother.', celebration: 'Monks perform rituals, butter lamps are lit in monasteries, and devotees earn merit by engaging in acts of kindness.' },
+                            { name: 'Christmas', date: '2025-12-25', history: 'Introduced by missionaries in the colonial period, now widely celebrated in urban Sikkim.', celebration: 'Churches are lit, choirs perform, and festive meals bring communities together.' }
+                        ];
+                        const calendarBody = document.getElementById('calendar-body');
+                        const monthYearEl = document.getElementById('month-year');
+                        const upcomingEventsList = document.getElementById('upcoming-events-list');
+                        const modal = document.getElementById('festival-modal');
+                        let currentDate = new Date(2025, 0, 1);
+                        function renderCalendar() {
+                            const year = currentDate.getFullYear();
+                            const month = currentDate.getMonth();
+                            monthYearEl.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+                            calendarBody.innerHTML = '';
+                            const firstDay = new Date(year, month, 1).getDay();
+                            const daysInMonth = new Date(year, month + 1, 0).getDate();
+                            const daysInPrevMonth = new Date(year, month, 0).getDate();
+                            for (let i = 0; i < firstDay; i++) {
+                                const day = daysInPrevMonth - firstDay + i + 1;
+                                calendarBody.innerHTML += `<div class='calendar-cell other-month'><span class='day-number'>${day}</span></div>`;
+                            }
+                            for (let i = 1; i <= daysInMonth; i++) {
+                                const cellDate = new Date(year, month, i);
+                                const dateString = cellDate.toISOString().split('T')[0];
+                                const cell = document.createElement('div');
+                                cell.classList.add('calendar-cell');
+                                let dayContent = `<span class='day-number'>${i}</span>`;
+                                const festival = festivals.find(f => f.date === dateString);
+                                if (festival) {
+                                    cell.classList.add('festival-day');
+                                    cell.dataset.festivalName = festival.name;
+                                    dayContent += `<span class='festival-marker'>🌸</span>`;
+                                }
+                                const today = new Date();
+                                if (year === today.getFullYear() && month === today.getMonth() && i === today.getDate()) {
+                                    cell.classList.add('today');
+                                }
+                                cell.innerHTML = dayContent;
+                                calendarBody.appendChild(cell);
+                            }
+                            renderUpcomingEvents();
+                        }
+                        function renderUpcomingEvents() {
+                            const eventsThisMonth = festivals.filter(f => new Date(f.date).getFullYear() === currentDate.getFullYear() && new Date(f.date).getMonth() === currentDate.getMonth());
+                            upcomingEventsList.innerHTML = '';
+                            if (eventsThisMonth.length > 0) {
+                                eventsThisMonth.sort((a,b) => new Date(a.date) - new Date(b.date));
+                                eventsThisMonth.forEach(event => {
+                                    const li = document.createElement('li');
+                                const dateText = `${new Date(event.date).getDate()} ${currentDate.toLocaleString('default', { month: 'short' })}`;
+                                li.innerHTML = `<div class="flex items-center justify-between gap-3"><span>${dateText}: ${event.name}</span><button class="book-now-btn bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-3 py-1 rounded" data-festival="${event.name}">${i18next.t('booking.bookNow')}</button></div>`;
+                                    li.dataset.festivalName = event.name;
+                                    upcomingEventsList.appendChild(li);
+                                });
+                            upcomingEventsList.querySelectorAll('.book-now-btn').forEach(btn => {
+                                btn.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    openBookingModal(btn.getAttribute('data-festival'));
+                                });
+                            });
+                            } else {
+                                upcomingEventsList.innerHTML = `<p id='no-events-msg'>No festivals scheduled for this month.</p>`;
+                            }
+                        }
+                        function showModal(name) {
+                            const festival = festivals.find(f => f.name === name);
+                            if (festival) {
+                                document.getElementById('modal-title').textContent = festival.name;
+                                document.getElementById('modal-history').textContent = festival.history;
+                                document.getElementById('modal-celebration').textContent = festival.celebration;
+                                modal.style.display = 'flex';
+                            }
+                        }
+                        document.getElementById('prev-month').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
+                        document.getElementById('next-month').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
+                        calendarBody.addEventListener('click', e => { if (e.target.closest('.festival-day')) showModal(e.target.closest('.festival-day').dataset.festivalName); });
+                        upcomingEventsList.addEventListener('click', e => { if (e.target.closest('li')) showModal(e.target.closest('li').dataset.festivalName); });
+                        document.getElementById('modal-close-btn').addEventListener('click', () => modal.style.display = 'none');
+                        modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+                        renderCalendar();
+                    })();
+                </script>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map View Page (Initially Hidden) -->
+    <section id="map-page" class="hidden py-10">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-6 theme-teal-text">Map of Monasteries & Attractions</h2>
+            <p class="text-center text-gray-600 mb-6">Browse Sikkim’s monasteries and nearby attractions on an interactive map.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div class="lg:col-span-1 bg-white rounded-xl shadow p-4 h-[70vh] overflow-y-auto border border-gray-100">
+                    <h3 class="text-lg font-semibold theme-teal-text mb-3">Locations</h3>
+                    <div id="map-list" class="space-y-2"></div>
+                </div>
+                <div class="lg:col-span-3">
+                    <div id="map-container" class="h-[70vh] w-full rounded-xl border border-gray-200 shadow relative overflow-hidden">
+                        <div id="map-loading" class="absolute inset-0 flex items-center justify-center bg-gray-900/40 text-white/90 z-10">
+                            <div class="flex items-center gap-3"><svg class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg> Loading map…</div>
+                        </div>
+                        <div id="monasteryMap" class="h-full w-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Digital Archives Page (Initially Hidden) -->
+    <section id="archives-page" class="hidden py-10">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-6 theme-teal-text">Digital Archives</h2>
+            <p class="text-center text-gray-600 mb-6">Explore manuscripts, murals, photographs, and historic documents.</p>
+            <div class="bg-white rounded-xl shadow p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <input id="arch-q" class="border rounded-lg px-3 py-2" placeholder="Keyword" />
+                    <select id="arch-type" class="border rounded-lg px-3 py-2">
+                        <option value="">All Types</option>
+                        <option>Manuscript</option>
+                        <option>Mural</option>
+                        <option>Photograph</option>
+                        <option>Document</option>
+                    </select>
+                    <select id="arch-language" class="border rounded-lg px-3 py-2">
+                        <option value="">Any Language</option>
+                        <option>Tibetan</option>
+                        <option>English</option>
+                        <option>Nepali</option>
+                        <option>Hindi</option>
+                    </select>
+                    <input id="arch-year" class="border rounded-lg px-3 py-2" placeholder="Year" />
+                    <select id="arch-monastery" class="border rounded-lg px-3 py-2">
+                        <option value="">All Monasteries</option>
+                    </select>
+                </div>
+                <div class="mt-3 text-right">
+                    <button id="arch-search" class="bg-teal-700 hover:bg-teal-800 text-white font-semibold px-4 py-2 rounded-lg">Search</button>
+                </div>
+            </div>
+            <div id="archives-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </div>
+    </section>
+
+    <!-- Archive Detail Modal -->
+    <div id="archive-detail-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-[75] flex items-center justify-center p-4 hidden opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-3xl transform scale-95 p-0">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 id="arch-detail-title" class="text-xl font-bold theme-teal-text"></h3>
+                <button class="modal-close-btn text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+            </div>
+            <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <img id="arch-detail-image" class="w-full h-64 object-cover rounded" alt="Archive image" />
+                <div>
+                    <p id="arch-detail-desc" class="text-gray-700 mb-3"></p>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        <div><strong>Type:</strong> <span id="arch-detail-type"></span></div>
+                        <div><strong>Language:</strong> <span id="arch-detail-lang"></span></div>
+                        <div><strong>Year:</strong> <span id="arch-detail-date"></span></div>
+                        <div><strong>Monastery:</strong> <span id="arch-detail-mon"></span></div>
+                        <div><strong>Period:</strong> <span id="arch-detail-period"></span></div>
+                        <div><strong>Material:</strong> <span id="arch-detail-material"></span></div>
+                        <div><strong>Dimensions:</strong> <span id="arch-detail-dimensions"></span></div>
+                        <div><strong>Significance:</strong> <span id="arch-detail-significance"></span></div>
+                        <div><strong>Keywords:</strong> <span id="arch-detail-keywords"></span></div>
+                    </div>
+                    <div class="mt-4 flex gap-3">
+                        <a id="arch-detail-download" href="#" target="_blank" rel="noopener" class="bg-teal-700 hover:bg-teal-800 text-white font-semibold px-4 py-2 rounded-lg">View / Download</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
      <!-- Virtual Tours Page (Initially Hidden) -->
     <div id="virtual-tours-page" class="fixed inset-0 bg-gray-900/95 z-[60] hidden p-8 text-white transition-opacity duration-300 opacity-0">
         <button id="close-vt-btn" class="absolute top-6 right-8 text-white/70 hover:text-white text-5xl font-light">&times;</button>
@@ -242,7 +521,22 @@
     <div id="pannellum-viewer-page" class="fixed inset-0 z-[70] hidden bg-gray-900">
         <div id="panorama"></div>
         <div id="imgCounter"></div>
+        <div id="pano-loading" class="absolute inset-0 flex items-center justify-center text-white/80 text-lg bg-black/40">
+            <div class="flex flex-col items-center">
+                <svg class="animate-spin h-8 w-8 text-white mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                <span data-i18n="tour.loading">Loading 360° tour…</span>
+            </div>
+        </div>
         <button id="close-pannellum-btn" class="absolute top-4 right-6 text-white/70 hover:text-white text-5xl font-light z-[1002]">&times;</button>
+        <div id="narration-controls" class="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-3 flex flex-col gap-2 z-[1001]">
+            <div class="flex items-center gap-3">
+                <button id="narration-play" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded" data-i18n="tour.play">Play</button>
+                <button id="narration-pause" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded" data-i18n="tour.pause">Pause</button>
+                <span class="text-sm text-white/80" id="narration-status"></span>
+            </div>
+            <div id="narration-captions" class="text-sm"></div>
+            <audio id="narration-audio" preload="none"></audio>
+        </div>
     </div>
 
 
@@ -260,8 +554,9 @@
     </footer>
     
     <!-- Modals -->
-    <div id="login-modal" class="modal fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center p-4 hidden opacity-0"><div class="modal-content bg-white rounded-lg shadow-xl p-8 w-full max-w-md transform scale-95"><h2 class="text-2xl font-bold text-center mb-6">Log In</h2><form id="login-form"><div class="mb-4"><label for="login-email" class="block text-gray-700 font-semibold mb-2">Email Address</label><input type="email" id="login-email" class="w-full px-4 py-2 border rounded-lg focus:outline-none" required></div><div class="mb-6"><label for="login-password" class="block text-gray-700 font-semibold mb-2">Password</label><input type="password" id="login-password" class="w-full px-4 py-2 border rounded-lg focus:outline-none" required></div><button type="submit" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded-lg transition">Log In</button></form><p id="login-error" class="text-red-500 text-center mt-4"></p><button class="modal-close-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800">&times;</button></div></div>
+    <div id="login-modal" class="modal fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center p-4 hidden opacity-0"><div class="modal-content bg-white rounded-lg shadow-xl p-8 w-full max-w-md transform scale-95"><h2 class="text-2xl font-bold text-center mb-6" data-i18n="auth.login">Log In</h2><form id="login-form"><div class="mb-4"><label for="login-email" class="block text-gray-700 font-semibold mb-2" data-i18n="auth.email">Email Address</label><input type="email" id="login-email" class="w-full px-4 py-2 border rounded-lg focus:outline-none" required></div><div class="mb-6"><label for="login-password" class="block text-gray-700 font-semibold mb-2" data-i18n="auth.password">Password</label><input type="password" id="login-password" class="w-full px-4 py-2 border rounded-lg focus:outline-none" required></div><button type="submit" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded-lg transition" data-i18n="auth.login">Log In</button></form><p id="login-error" class="text-red-500 text-center mt-4"></p><button class="modal-close-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800">&times;</button></div></div>
     <div id="signup-modal" class="modal fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center p-4 hidden opacity-0"><div class="modal-content bg-white rounded-lg shadow-xl p-8 w-full max-w-md transform scale-95"><h2 class="text-2xl font-bold text-center mb-6">Create Account</h2><form id="signup-form"><div class="mb-4"><label for="signup-email" class="block text-gray-700 font-semibold mb-2">Email Address</label><input type="email" id="signup-email" class="w-full px-4 py-2 border rounded-lg focus:outline-none" required></div><div class="mb-6"><label for="signup-password" class="block text-gray-700 font-semibold mb-2">Password</label><input type="password" id="signup-password" class="w-full px-4 py-2 border rounded-lg focus:outline-none" required></div><button type="submit" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded-lg transition">Sign Up</button></form><p id="signup-error" class="text-red-500 text-center mt-4"></p><button class="modal-close-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800">&times;</button></div></div>
+    <div id="booking-modal" class="modal fixed inset-0 bg-black bg-opacity-50 z-[80] flex items-center justify-center p-4 hidden opacity-0"><div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-lg transform scale-95"><h2 class="text-2xl font-bold mb-4" data-i18n="booking.title">Book Festival</h2><form id="booking-form" class="space-y-3"><input type="hidden" id="booking-festival-name"><div><label class="block text-gray-700 font-semibold mb-1" for="booking-name" data-i18n="booking.name">Full Name</label><input id="booking-name" class="w-full px-3 py-2 border rounded-lg" required></div><div><label class="block text-gray-700 font-semibold mb-1" for="booking-email" data-i18n="booking.email">Email</label><input id="booking-email" type="email" class="w-full px-3 py-2 border rounded-lg" required></div><div><label class="block text-gray-700 font-semibold mb-1" for="booking-participants" data-i18n="booking.participants">Number of Participants</label><input id="booking-participants" type="number" min="1" value="1" class="w-full px-3 py-2 border rounded-lg" required></div><div><label class="block text-gray-700 font-semibold mb-1" for="booking-date" data-i18n="booking.date">Preferred Date</label><input id="booking-date" type="date" class="w-full px-3 py-2 border rounded-lg" required></div><div class="flex items-center gap-3 pt-2"><button type="submit" class="bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2 px-4 rounded-lg" data-i18n="booking.submit">Proceed to Pay</button><button type="button" id="booking-cancel" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg" data-i18n="actions.cancel">Cancel</button></div><p id="booking-error" class="text-red-500"></p></form><button class="modal-close-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800">&times;</button></div></div>
     <div id="detail-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-[70] flex items-center justify-center p-4 hidden opacity-0"><div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col transform scale-95"><div class="p-6 border-b flex justify-between items-center"><h2 id="modal-title" class="text-2xl font-bold theme-teal-text"></h2><button id="modal-close-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button></div><div class="p-6 overflow-y-auto"><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="relative mb-4"><img id="modal-main-image" src="" alt="Monastery main image" class="w-full h-96 object-cover rounded-lg shadow-md sharp-image"><button id="prev-image-btn" class="absolute top-1/2 left-3 transform -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 focus:outline-none transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button><button id="next-image-btn" class="absolute top-1/2 right-3 transform -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 focus:outline-none transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button></div><div id="modal-thumbnail-gallery" class="thumbnail-gallery flex space-x-2 overflow-x-auto p-2"></div></div><div class="flex flex-col"><h3 class="text-xl font-bold mb-2">Location: <span id="modal-location" class="font-normal text-gray-700"></span></h3><p id="modal-description" class="text-gray-600 leading-relaxed flex-grow"></p></div></div></div></div></div>
 
     <!-- Toast Notification -->
@@ -273,18 +568,29 @@
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Stripe Checkout (optional)
+        const hasStripe = Boolean((window.__stripe_public_key || '').length);
 
         // --- Monastery Data ---
         const monasteries = [
-            { id: 1, name: "Rumtek Monastery (Dharma Chakra Centre)", location: "East Sikkim", description: "The most famous monastery in Sikkim, Rumtek is the seat of the Karmapa Lama. Known for its golden stupa, vibrant murals, and peaceful surroundings, it’s a spiritual and architectural marvel offering a deep dive into Tibetan Buddhist culture.", imageUrl: "https://i.postimg.cc/1579Sz9p/Screenshot-2025-09-13-144137.png", galleryUrls: ["https://i.postimg.cc/1579Sz9p/Screenshot-2025-09-13-144137.png", "https://i.postimg.cc/65p9FZNW/Screenshot-2025-09-13-144158.png", "https://i.postimg.cc/zDjzdj62/Screenshot-2025-09-13-144220.jpg"], view360Url: "#" },
-            { id: 2, name: "Lingdum Monastery (Ranka Monastery)", location: "East Sikkim", description: "A modern gem with traditional Tibetan architecture, Lingdum is set amidst scenic valleys. Its spacious courtyard often hosts young monks practicing rituals and prayers, making it a lively yet serene place to experience monastic life.", imageUrl: "https://i.postimg.cc/GpGrvJvQ/Screenshot-2025-09-13-203758.png", galleryUrls: ["https://i.postimg.cc/GpGrvJvQ/Screenshot-2025-09-13-203758.png", "https://i.postimg.cc/7ZCqZy6j/Screenshot-2025-09-13-203925.png", "https://i.postimg.cc/fR6D3gSy/Screenshot-2025-09-13-204005.png"], view360Url: "#" },
-            { id: 3, name: "Pemayangtse Monastery", location: "West Sikkim", description: "One of Sikkim’s oldest monasteries, Pemayangtse is famous for its breathtaking view of Mt. Kanchenjunga and its exquisite wooden structure “Zangdok Palri,” depicting Guru Padmasambhava’s heavenly abode. A must-visit for culture and nature lovers.", imageUrl: "https://i.postimg.cc/7ZTyyMtk/Screenshot-2025-09-13-205158.jpg", galleryUrls: ["https://i.postimg.cc/7ZTyyMtk/Screenshot-2025-09-13-205158.jpg", "https://i.postimg.cc/MG72nZ83/Screenshot-2025-09-13-205209.jpg", "https://i.postimg.cc/wB8Yxyns/Screenshot-2025-09-13-205221.jpg", "https://i.postimg.cc/KzmXBXGG/Screenshot-2025-09-13-205231.jpg"], view360Url: "#" },
-            { id: 4, name: "Dubdi Monastery", location: "West Sikkim", description: "Known as the “Hermit’s Cell,” Dubdi is the oldest monastery in Sikkim, built in 1701. Nestled in forests near Yuksom, it radiates history and tranquility, making it perfect for those seeking a spiritual escape off the beaten path.", imageUrl: "https://i.postimg.cc/ZRsfRX0D/Screenshot-2025-09-13-205722.jpg", galleryUrls: ["https://i.postimg.cc/ZRsfRX0D/Screenshot-2025-09-13-205722.jpg", "https://i.postimg.cc/cHL9dd1n/Screenshot-2025-09-13-205744.jpg", "https://i.postimg.cc/5yHsFpC9/Screenshot-2025-09-13-205758.jpg", "https://i.postimg.cc/Vv3D9Mqq/Screenshot-2025-09-13-210237.jpg"], view360Url: "#" },
-            { id: 5, name: "Tashiding Monastery", location: "West Sikkim", description: "Regarded as the 'Heart of Sikkim,' Tashiding Monastery is one of the most sacred pilgrimage sites...", imageUrl: "https://i.postimg.cc/jd6nRNyk/Whats-App-Image-2025-09-15-at-12-43-48-40b44eb8.jpg", galleryUrls: ["https://i.postimg.cc/jd6nRNyk/Whats-App-Image-2025-09-15-at-12-43-48-40b44eb8.jpg", "https://i.postimg.cc/05wJHhjv/Whats-App-Image-2025-09-15-at-12-43-48-aba00138.jpg", "https://i.postimg.cc/YqBmc8LW/Whats-App-Image-2025-09-15-at-12-43-49-7a70d870.jpg"], view360Url: "#" },
-            { id: 6, name: "Lachen Monastery", location: "North Sikkim", description: "The charm of Lachen Monastery lies not just in its traditional architecture but also in its dramatic alpine setting...", imageUrl: "https://i.postimg.cc/fT5WHvcZ/Whats-App-Image-2025-09-15-at-12-49-40-73a94566.jpg", galleryUrls: ["https://i.postimg.cc/fT5WHvcZ/Whats-App-Image-2025-09-15-at-12-49-40-73a94566.jpg", "https://i.postimg.cc/QNQd7DVF/Whats-App-Image-2025-09-15-at-12-49-40-88eec83f.jpg", "https://i.postimg.cc/BQJQcz1M/Whats-App-Image-2025-09-15-at-12-52-55-4e06d271.jpg"], view360Url: "#" },
-            { id: 7, name: "Lachung Monastery", location: "North Sikkim", description: "Perched on a scenic ridge overlooking the Lachung River, Lachung Monastery is another beautiful example of traditional high-altitude monastic architecture...", imageUrl: "https://i.postimg.cc/hGQStWHP/Whats-App-Image-2025-09-15-at-13-03-22-13f9c772.jpg", galleryUrls: ["https://i.postimg.cc/hGQStWHP/Whats-App-Image-2025-09-15-at-13-03-22-13f9c772.jpg", "https://i.postimg.cc/mDxTcps3/Whats-App-Image-2025-09-15-at-13-03-22-482d7677.jpg"], view360Url: "#" },
-            { id: 8, name: "Ralong Monastery", location: "South Sikkim", description: "The largest monastery in Sikkim, Ralong Monastery is a magnificent example of Tibetan Buddhist architecture...", imageUrl: "https://i.postimg.cc/Z5kHMr47/Whats-App-Image-2025-09-15-at-13-13-27-0b4664b5.jpg", galleryUrls: ["https://i.postimg.cc/Z5kHMr47/Whats-App-Image-2025-09-15-at-13-13-27-0b4664b5.jpg", "https://i.postimg.cc/wTRF2W8R/Whats-App-Image-2025-09-15-at-13-13-27-0d6cc3f1.jpg", "https://i.postimg.cc/dQx4GbXK/Whats-App-Image-2025-09-15-at-13-13-42-90a586f5.jpg"], view360Url: "#" },
-            { id: 9, name: "Sample", location: "Your Location", description: "This is a sample description for a new monastery template...", imageUrl: "https://i.postimg.cc/3w8vTK8P/OIP.jpg", hoverImageUrl: "https://i.postimg.cc/3w8vTK8P/OIP.jpg", galleryUrls: ["https://i.postimg.cc/3w8vTK8P/OIP.jpg"], view360Url: "internal-sample-tour" }
+            { id: 1, name: "Rumtek Monastery (Dharma Chakra Centre)", location: "East Sikkim", description: "The most famous monastery in Sikkim, Rumtek is the seat of the Karmapa Lama. Known for its golden stupa, vibrant murals, and peaceful surroundings, it’s a spiritual and architectural marvel offering a deep dive into Tibetan Buddhist culture.", imageUrl: "https://i.postimg.cc/1579Sz9p/Screenshot-2025-09-13-144137.png", galleryUrls: ["https://i.postimg.cc/1579Sz9p/Screenshot-2025-09-13-144137.png", "https://i.postimg.cc/65p9FZNW/Screenshot-2025-09-13-144158.png", "https://i.postimg.cc/zDjzdj62/Screenshot-2025-09-13-144220.jpg"], view360Url: "#",
+              details: { founded: "Originally in the 16th century by the 9th Karmapa; rebuilt in the 1960s by the 16th Karmapa.", altitude: "~1,500 m (4,900 ft)", sect: "Kagyu (Karma Kagyu)", bestTime: "October – June (Losar, Cham dances)", visitingHours: "6:00 AM – 6:00 PM", howToReach: "~24 km from Gangtok; taxis/buses, short uphill walk through pines." } },
+            { id: 2, name: "Lingdum Monastery (Ranka Monastery)", location: "East Sikkim", description: "A modern gem with traditional Tibetan architecture, Lingdum is set amidst scenic valleys. Its spacious courtyard often hosts young monks practicing rituals and prayers, making it a lively yet serene place to experience monastic life.", imageUrl: "https://i.postimg.cc/GpGrvJvQ/Screenshot-2025-09-13-203758.png", galleryUrls: ["https://i.postimg.cc/GpGrvJvQ/Screenshot-2025-09-13-203758.png", "https://i.postimg.cc/7ZCqZy6j/Screenshot-2025-09-13-203925.png", "https://i.postimg.cc/fR6D3gSy/Screenshot-2025-09-13-204005.png"], view360Url: "#",
+              details: { founded: "Inaugurated in 1998.", altitude: "~1,500 m (4,900 ft)", sect: "Zurmang Kagyu", bestTime: "Mar – Jun, Sep – Nov (clear views)", visitingHours: "6:00 AM – 5:00 PM", howToReach: "~20 km from Gangtok; taxis via scenic villages/forests." } },
+            { id: 3, name: "Pemayangtse Monastery", location: "West Sikkim", description: "One of Sikkim’s oldest monasteries, Pemayangtse is famous for its breathtaking view of Mt. Kanchenjunga and its exquisite wooden structure “Zangdok Palri,” depicting Guru Padmasambhava’s heavenly abode. A must-visit for culture and nature lovers.", imageUrl: "https://i.postimg.cc/7ZTyyMtk/Screenshot-2025-09-13-205158.jpg", galleryUrls: ["https://i.postimg.cc/7ZTyyMtk/Screenshot-2025-09-13-205158.jpg", "https://i.postimg.cc/MG72nZ83/Screenshot-2025-09-13-205209.jpg", "https://i.postimg.cc/wB8Yxyns/Screenshot-2025-09-13-205221.jpg", "https://i.postimg.cc/KzmXBXGG/Screenshot-2025-09-13-205231.jpg"], view360Url: "#",
+              details: { founded: "1705 by Lama Lhatsun Chempo.", altitude: "~2,085 m (6,841 ft)", sect: "Nyingma", bestTime: "Feb (Cham), Mar – May, Oct – Dec", visitingHours: "9:00 AM – 6:00 PM", howToReach: "Near Pelling (~2 km); ~110 km from Gangtok by road." } },
+            { id: 4, name: "Dubdi Monastery", location: "West Sikkim", description: "Known as the “Hermit’s Cell,” Dubdi is the oldest monastery in Sikkim, built in 1701. Nestled in forests near Yuksom, it radiates history and tranquility, making it perfect for those seeking a spiritual escape off the beaten path.", imageUrl: "https://i.postimg.cc/ZRsfRX0D/Screenshot-2025-09-13-205722.jpg", galleryUrls: ["https://i.postimg.cc/ZRsfRX0D/Screenshot-2025-09-13-205722.jpg", "https://i.postimg.cc/cHL9dd1n/Screenshot-2025-09-13-205744.jpg", "https://i.postimg.cc/5yHsFpC9/Screenshot-2025-09-13-205758.jpg", "https://i.postimg.cc/Vv3D9Mqq/Screenshot-2025-09-13-210237.jpg"], view360Url: "#",
+              details: { founded: "1701; first monastery of Sikkim.", altitude: "~2,100 m (6,890 ft)", sect: "Nyingma", bestTime: "Apr – Jun, Sep – Nov", visitingHours: "9:00 AM – 5:00 PM", howToReach: "Near Yuksom (~3 km trek uphill through forests)." } },
+            { id: 5, name: "Tashiding Monastery", location: "West Sikkim", description: "Regarded as the 'Heart of Sikkim,' Tashiding Monastery is one of the most sacred pilgrimage sites...", imageUrl: "https://i.postimg.cc/jd6nRNyk/Whats-App-Image-2025-09-15-at-12-43-48-40b44eb8.jpg", galleryUrls: ["https://i.postimg.cc/jd6nRNyk/Whats-App-Image-2025-09-15-at-12-43-48-40b44eb8.jpg", "https://i.postimg.cc/05wJHhjv/Whats-App-Image-2025-09-15-at-12-43-48-aba00138.jpg", "https://i.postimg.cc/YqBmc8LW/Whats-App-Image-2025-09-15-at-12-43-49-7a70d870.jpg"], view360Url: "#",
+              details: { founded: "1641 by Ngadak Sempa Chempo.", altitude: "~1,460 m (4,790 ft)", sect: "Nyingma", bestTime: "Feb/Mar (Bumchu), Oct – May", visitingHours: "7:00 AM – 6:00 PM", howToReach: "~40 km from Geyzing; taxis from Pelling/Yuksom." } },
+            { id: 6, name: "Lachen Monastery", location: "North Sikkim", description: "The charm of Lachen Monastery lies not just in its traditional architecture but also in its dramatic alpine setting...", imageUrl: "https://i.postimg.cc/fT5WHvcZ/Whats-App-Image-2025-09-15-at-12-49-40-73a94566.jpg", galleryUrls: ["https://i.postimg.cc/fT5WHvcZ/Whats-App-Image-2025-09-15-at-12-49-40-73a94566.jpg", "https://i.postimg.cc/QNQd7DVF/Whats-App-Image-2025-09-15-at-12-49-40-88eec83f.jpg", "https://i.postimg.cc/BQJQcz1M/Whats-App-Image-2025-09-15-at-12-52-55-4e06d271.jpg"], view360Url: "#",
+              details: { founded: "Early 19th century by Lama Karchen Dorje Drak.", altitude: "~2,750 m (9,022 ft)", sect: "Nyingma", bestTime: "Mar – Jun, Sep – Dec", visitingHours: "6:00 AM – 5:00 PM", howToReach: "In Lachen (~120 km from Gangtok); shared jeeps/taxis." } },
+            { id: 7, name: "Lachung Monastery", location: "North Sikkim", description: "Perched on a scenic ridge overlooking the Lachung River, Lachung Monastery is another beautiful example of traditional high-altitude monastic architecture...", imageUrl: "https://i.postimg.cc/hGQStWHP/Whats-App-Image-2025-09-15-at-13-03-22-13f9c772.jpg", galleryUrls: ["https://i.postimg.cc/hGQStWHP/Whats-App-Image-2025-09-15-at-13-03-22-13f9c772.jpg", "https://i.postimg.cc/mDxTcps3/Whats-App-Image-2025-09-15-at-13-03-22-482d7677.jpg"], view360Url: "#",
+              details: { founded: "1850; began as a hermitage, later expanded.", altitude: "~2,600 m (8,530 ft)", sect: "Nyingma", bestTime: "Mar – Jun (rhododendrons), Sep – Nov", visitingHours: "6:00 AM – 5:00 PM", howToReach: "In Lachung (~118 km from Gangtok); road access, long scenic drives." } },
+            { id: 8, name: "Ralong Monastery", location: "South Sikkim", description: "The largest monastery in Sikkim, Ralong Monastery is a magnificent example of Tibetan Buddhist architecture...", imageUrl: "https://i.postimg.cc/Z5kHMr47/Whats-App-Image-2025-09-15-at-13-13-27-0b4664b5.jpg", galleryUrls: ["https://i.postimg.cc/Z5kHMr47/Whats-App-Image-2025-09-15-at-13-13-27-0b4664b5.jpg", "https://i.postimg.cc/wTRF2W8R/Whats-App-Image-2025-09-15-at-13-13-27-0d6cc3f1.jpg", "https://i.postimg.cc/dQx4GbXK/Whats-App-Image-2025-09-15-at-13-13-42-90a586f5.jpg"], view360Url: "#",
+              details: { founded: "1768 by the 9th Karmapa, Wangchuk Dorje.", altitude: "~2,135 m (7,005 ft)", sect: "Kagyu (Karma Kagyu)", bestTime: "Jul (Pang Lhabsol), Sep (Mahakala), Oct – Dec", visitingHours: "8:00 AM – 5:00 PM", howToReach: "~6 km from Ravangla; taxis/jeeps from Namchi/Gangtok." } },
+            { id: 9, name: "Sample", location: "Your Location", description: "This is a sample description for a new monastery template...", imageUrl: "https://i.postimg.cc/3w8vTK8P/OIP.jpg", hoverImageUrl: "https://i.postimg.cc/3w8vTK8P/OIP.jpg", galleryUrls: ["https://i.postimg.cc/3w8vTK8P/OIP.jpg"], view360Url: "internal-sample-tour",
+              details: { founded: "—", altitude: "—", sect: "—", bestTime: "—", visitingHours: "—", howToReach: "—" } }
         ];
 
         // --- Firebase Configuration ---
@@ -330,6 +636,8 @@
         const modalTitle = document.getElementById('modal-title');
         const modalLocation = document.getElementById('modal-location');
         const modalDescription = document.getElementById('modal-description');
+        const modalExtraDetailsId = 'modal-extra-details';
+        const modalActionButtonsId = 'modal-action-buttons';
         const modalMainImage = document.getElementById('modal-main-image');
         const modalThumbnailGallery = document.getElementById('modal-thumbnail-gallery');
         const prevImageBtn = document.getElementById('prev-image-btn');
@@ -343,12 +651,44 @@
         const heroSlidesContainer = document.getElementById('hero-slides-container');
         const heroPrevBtn = document.getElementById('hero-prev-btn');
         const heroNextBtn = document.getElementById('hero-next-btn');
+        const heroSearchInput = document.getElementById('hero-search-input');
+        const heroSearchBtn = document.getElementById('hero-search-btn');
+        const searchSuggestions = document.getElementById('search-suggestions');
         const virtualTourBtn = document.getElementById('virtual-tour-btn');
         const virtualToursPage = document.getElementById('virtual-tours-page');
         const closeVtBtn = document.getElementById('close-vt-btn');
         const vtGridContainer = document.getElementById('vt-grid-container');
         const pannellumViewerPage = document.getElementById('pannellum-viewer-page');
         const closePannellumBtn = document.getElementById('close-pannellum-btn');
+        const mapPage = document.getElementById('map-page');
+        const mapList = document.getElementById('map-list');
+        const mapHeroBtn = document.getElementById('map-hero-btn');
+        const archivesPage = document.getElementById('archives-page');
+        const archivesGrid = document.getElementById('archives-grid');
+        const archQ = document.getElementById('arch-q');
+        const archType = document.getElementById('arch-type');
+        const archLang = document.getElementById('arch-language');
+        const archYear = document.getElementById('arch-year');
+        const archMonastery = document.getElementById('arch-monastery');
+        const archSearchBtn = document.getElementById('arch-search');
+        const archiveDetailModal = document.getElementById('archive-detail-modal');
+        const archDetailTitle = document.getElementById('arch-detail-title');
+        const archDetailImage = document.getElementById('arch-detail-image');
+        const archDetailDesc = document.getElementById('arch-detail-desc');
+        const archDetailType = document.getElementById('arch-detail-type');
+        const archDetailLang = document.getElementById('arch-detail-lang');
+        const archDetailDate = document.getElementById('arch-detail-date');
+        const archDetailMon = document.getElementById('arch-detail-mon');
+        const archDetailPeriod = document.getElementById('arch-detail-period');
+        const archDetailMaterial = document.getElementById('arch-detail-material');
+        const archDetailDimensions = document.getElementById('arch-detail-dimensions');
+        const archDetailSignificance = document.getElementById('arch-detail-significance');
+        const archDetailKeywords = document.getElementById('arch-detail-keywords');
+        const archDetailDownload = document.getElementById('arch-detail-download');
+        const bookingModal = document.getElementById('booking-modal');
+        const bookingForm = document.getElementById('booking-form');
+        const bookingCancel = document.getElementById('booking-cancel');
+        const bookingError = document.getElementById('booking-error');
 
         // --- State ---
         let slideshowImages = [];
@@ -358,6 +698,36 @@
         
         // --- 360 Tour State ---
         let pannellumViewer = null;
+        let currentLanguage = 'en';
+        const narration = {
+            en: {
+                captions: [
+                    'Welcome to the monastery tour. Begin at the entrance.',
+                    'Observe the ornate exterior and prayer wheels.',
+                    'Step inside the main hall with murals.',
+                    'Explore the courtyard and serene surroundings.'
+                ],
+                audio: [ '', '', '', '' ]
+            },
+            hi: {
+                captions: [
+                    'मठ की सैर में आपका स्वागत है। प्रवेश द्वार से शुरुआत करें।',
+                    'सजावटी बाहरी भाग और प्रार्थना चक्कियों को देखें।',
+                    'मुख्य सभागार में प्रवेश करें जहाँ भित्तिचित्र हैं।',
+                    'आँगन और शांत वातावरण का अन्वेषण करें।'
+                ],
+                audio: [ '', '', '', '' ]
+            },
+            ne: {
+                captions: [
+                    'गुम्बा यात्रामा स्वागत छ। प्रवेश द्वारबाट सुरु गर्नुहोस्।',
+                    'सजिएको बाहिरी भाग र प्रार्थना चक्रहरू हेर्नुहोस्।',
+                    'मुख्य हलमा प्रवेश गर्नुहोस् जहाँ चित्रहरू छन्।',
+                    'आँगन र शान्त वातावरणअन्वेषण गर्नुहोस्।'
+                ],
+                audio: [ '', '', '', '' ]
+            }
+        };
 
         // --- Functions ---
         const showToast = (message) => {
@@ -401,7 +771,7 @@
                 if (nextSlide && !nextSlide.style.backgroundImage) {
                     nextSlide.style.backgroundImage = `url('${nextSlide.dataset.src}')`;
                 }
-                heroSlidesContainer.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+            heroSlidesContainer.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
             }
         };
         
@@ -419,6 +789,15 @@
             if (slideshowInterval) clearInterval(slideshowInterval);
             slideshowInterval = setInterval(showNextSlide, 5000);
         };
+
+        // Pause slideshow when tab is hidden to save CPU and avoid jank
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (slideshowInterval) { clearInterval(slideshowInterval); slideshowInterval = null; }
+            } else {
+                startSlideshowInterval();
+            }
+        }, { passive: true });
 
         const showModal = (modal) => {
             modal.classList.remove('hidden');
@@ -481,8 +860,13 @@
             else { userActions.classList.remove('hidden'); userGreeting.classList.add('hidden'); greetingText.textContent = ''; }
         };
 
-        const showDiscoverPage = () => { mainContent.classList.add('hidden'); discoverPage.classList.remove('hidden'); populateMonasteryGrid(); };
-        const showHomePage = () => { discoverPage.classList.add('hidden'); mainContent.classList.remove('hidden'); };
+        const calendarPage = document.getElementById('calendar-page');
+        const calendarHeroBtn = document.getElementById('calendar-hero-btn');
+        const showDiscoverPage = () => { mainContent.classList.add('hidden'); calendarPage.classList.add('hidden'); mapPage.classList.add('hidden'); archivesPage.classList.add('hidden'); discoverPage.classList.remove('hidden'); populateMonasteryGrid(); };
+        const showHomePage = () => { discoverPage.classList.add('hidden'); calendarPage.classList.add('hidden'); mapPage.classList.add('hidden'); archivesPage.classList.add('hidden'); mainContent.classList.remove('hidden'); };
+        const showCalendarPage = () => { mainContent.classList.add('hidden'); discoverPage.classList.add('hidden'); mapPage.classList.add('hidden'); archivesPage.classList.add('hidden'); calendarPage.classList.remove('hidden'); };
+        const showMapPage = () => { mainContent.classList.add('hidden'); discoverPage.classList.add('hidden'); calendarPage.classList.add('hidden'); archivesPage.classList.add('hidden'); mapPage.classList.remove('hidden'); ensureLeafletLoaded().then(initMapIfNeeded); };
+        const showArchivesPage = () => { mainContent.classList.add('hidden'); discoverPage.classList.add('hidden'); calendarPage.classList.add('hidden'); mapPage.classList.add('hidden'); archivesPage.classList.remove('hidden'); populateArchivesFilters(); fetchAndRenderArchives(); };
 
         const populateMonasteryGrid = () => {
             monasteryGrid.innerHTML = '';
@@ -491,9 +875,9 @@
                 card.className = 'bg-white rounded-lg shadow-lg overflow-hidden group';
                 
                 const tourButtonHtml = (monastery.view360Url)
-                    ? `<button class="tour-button absolute top-2 right-2 bg-black/60 text-white text-xs font-bold py-1.5 px-3 rounded-full flex items-center hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
-                        360&deg; Tour
+                    ? `<button class="tour-button absolute top-2 right-2 bg-teal-600/90 text-white text-xs font-semibold py-1.5 px-3 rounded-full flex items-center gap-1.5 shadow ring-1 ring-white/30 backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:shadow-lg hover:scale-[1.03]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7a5 5 0 100 10 5 5 0 000-10z"/><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 2a8 8 0 100 16 8 8 0 000-16z" clip-rule="evenodd"/></svg>
+                        View 360&deg;
                        </button>` : '';
                 
                 let imageHtml;
@@ -538,7 +922,61 @@
             modalDescription.textContent = monastery.description;
             detailModal.dataset.gallery = JSON.stringify(monastery.galleryUrls);
             detailModal.dataset.index = "0";
+            const mapsQuery = encodeURIComponent(`${monastery.name} ${monastery.location || ''}`.trim());
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
             
+            // Build extra details section under description
+            let extra = document.getElementById(modalExtraDetailsId);
+            if (!extra) {
+                extra = document.createElement('div');
+                extra.id = modalExtraDetailsId;
+                modalDescription.parentElement.appendChild(extra);
+            }
+            const d = monastery.details || {};
+            extra.innerHTML = `
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                        <div class="font-semibold text-teal-800">Founded</div>
+                        <div class="text-gray-700">${d.founded || '-'}</div>
+                    </div>
+                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                        <div class="font-semibold text-teal-800">Altitude</div>
+                        <div class="text-gray-700">${d.altitude || '-'}</div>
+                    </div>
+                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                        <div class="font-semibold text-teal-800">Sect</div>
+                        <div class="text-gray-700">${d.sect || '-'}</div>
+                    </div>
+                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                        <div class="font-semibold text-teal-800">Best Time to Visit</div>
+                        <div class="text-gray-700">${d.bestTime || '-'}</div>
+                    </div>
+                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4 md:col-span-2">
+                        <div class="font-semibold text-teal-800">Visiting Hours</div>
+                        <div class="text-gray-700">${d.visitingHours || '-'}</div>
+                    </div>
+                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4 md:col-span-2">
+                        <div class="font-semibold text-teal-800">How to Reach</div>
+                        <div class="text-gray-700">${d.howToReach || '-'}</div>
+                    </div>
+                </div>
+            `;
+
+            // Build action buttons (e.g., View in Maps)
+            let actions = document.getElementById(modalActionButtonsId);
+            if (!actions) {
+                actions = document.createElement('div');
+                actions.id = modalActionButtonsId;
+                actions.className = 'mt-6 flex flex-wrap gap-3';
+                modalDescription.parentElement.appendChild(actions);
+            }
+            actions.innerHTML = `
+                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2 px-4 rounded-lg shadow transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>
+                    View in Maps
+                </a>
+            `;
+
             modalThumbnailGallery.innerHTML = '';
             monastery.galleryUrls.forEach((url, index) => {
                 const thumbImg = document.createElement('img');
@@ -603,6 +1041,8 @@
         const showSample360Tour = () => {
             hideVirtualToursPage();
             pannellumViewerPage.classList.remove('hidden');
+            const loadingEl = document.getElementById('pano-loading');
+            if (loadingEl) loadingEl.classList.remove('hidden');
             
             if (pannellumViewer) { pannellumViewer.destroy(); }
             
@@ -637,47 +1077,78 @@
                 }
             });
 
-            pannellumViewer = pannellum.viewer('panorama', {
-                default: {
-                    firstScene: 'scene0',
-                    sceneFadeDuration: 1000,
-                    hfov: 70,
-                    minHfov: 50,
-                    maxHfov: 110
-                },
-                scenes: scenes,
-                autoLoad: true,
-                showControls: true,
-                keyboardZoom: true,
-                mouseZoom: true,
-                autoRotate: 0,
-                // Render more pixels on HiDPI screens for sharper output
-                maxPixelRatio: Math.min(window.devicePixelRatio || 1, 2.5)
-            });
-            
-            pannellumViewer.on('load', () => {
-                const currentSceneId = pannellumViewer.getScene();
-                const idx = parseInt(currentSceneId.replace('scene', ''));
-                updateCounter(idx);
-                // Ensure consistent field of view on scene load
-                try { pannellumViewer.setHfov(70, false); } catch(_) {}
-                // Preload the next image for smoother transition
-                if (idx + 1 < sampleTourData.images.length) {
-                    const nextImg = sampleTourData.images[idx + 1];
-                    const src = nextImg.url || nextImg;
-                    if (typeof src === 'string') { new Image().src = src; }
-                }
-            });
+            const createViewer = () => {
+                pannellumViewer = pannellum.viewer('panorama', {
+                    default: {
+                        firstScene: 'scene0',
+                        sceneFadeDuration: 800,
+                        hfov: 70,
+                        minHfov: 50,
+                        maxHfov: 110
+                    },
+                    scenes: scenes,
+                    autoLoad: true,
+                    showControls: true,
+                    keyboardZoom: true,
+                    mouseZoom: true,
+                    autoRotate: 0,
+                    // Render more pixels on HiDPI screens for sharper output
+                    maxPixelRatio: Math.min(window.devicePixelRatio || 1, 2.0)
+                });
 
-            pannellumViewer.on('scenechange', (sceneId) => {
-                const idx = parseInt(sceneId.replace('scene', ''));
-                updateCounter(idx);
-                // Reset FOV on each scene change to avoid auto-zoom effect
-                try { pannellumViewer.setHfov(70, false); } catch(_) {}
-            });
+                pannellumViewer.on('load', () => {
+                    if (loadingEl) loadingEl.classList.add('hidden');
+                    const currentSceneId = pannellumViewer.getScene();
+                    const idx = parseInt(currentSceneId.replace('scene', ''));
+                    updateCounter(idx);
+                    updateNarrationForScene(idx);
+                    // Preload the next image for smoother transition
+                    if (idx + 1 < sampleTourData.images.length) {
+                        const nextImg = sampleTourData.images[idx + 1];
+                        const src = nextImg.url || nextImg;
+                        if (typeof src === 'string') { new Image().src = src; }
+                    }
+                });
+
+                pannellumViewer.on('scenechange', (sceneId) => {
+                    if (loadingEl) loadingEl.classList.remove('hidden');
+                    const idx = parseInt(sceneId.replace('scene', ''));
+                    updateCounter(idx);
+                    // Reset FOV on each scene change to avoid auto-zoom effect
+                    try { pannellumViewer.setHfov(70, false); } catch(_) {}
+                    updateNarrationForScene(idx);
+                });
+
+                pannellumViewer.on('scenechangefadedone', () => {
+                    if (loadingEl) loadingEl.classList.add('hidden');
+                });
+            };
+
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(createViewer, { timeout: 500 });
+            } else {
+                setTimeout(createViewer, 0);
+            }
 
             function updateCounter(idx) {
                 document.getElementById('imgCounter').textContent = `Image ${idx + 1} / ${sampleTourData.images.length}`;
+            }
+            function updateNarrationForScene(idx) {
+                const audioEl = document.getElementById('narration-audio');
+                const captionsEl = document.getElementById('narration-captions');
+                const statusEl = document.getElementById('narration-status');
+                const langData = narration[currentLanguage] || narration.en;
+                captionsEl.textContent = langData.captions[idx] || '';
+                const src = (langData.audio[idx] || '').trim();
+                if (src) {
+                    audioEl.src = src;
+                    audioEl.load();
+                    statusEl.textContent = '';
+                } else {
+                    audioEl.removeAttribute('src');
+                    try { audioEl.pause(); } catch(_) {}
+                    statusEl.textContent = i18next.t('tour.noAudio');
+                }
             }
         };
         
@@ -690,7 +1161,14 @@
         // --- Event Listeners ---
         loginBtn.addEventListener('click', () => showModal(loginModal));
         signupBtn.addEventListener('click', () => showModal(signupModal));
-        document.querySelectorAll('.modal-close-btn').forEach(btn => { btn.addEventListener('click', (e) => hideModal(e.target.closest('.modal'))); });
+        document.querySelectorAll('.modal-close-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => hideModal(e.target.closest('.modal')));
+        });
+        // Ensure cross button in detail modal is responsive too
+        const topCloseBtn = document.getElementById('modal-close-btn');
+        if (topCloseBtn) {
+            topCloseBtn.addEventListener('click', () => hideModal(detailModal));
+        }
         [loginModal, signupModal, detailModal, sidebarOverlay].forEach(el => {
             el.addEventListener('click', (e) => {
                 if (e.target === el) {
@@ -700,6 +1178,7 @@
             });
         });
         modalCloseBtn.addEventListener('click', () => hideModal(detailModal));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (!detailModal.classList.contains('hidden')) hideModal(detailModal); if (!loginModal.classList.contains('hidden')) hideModal(loginModal); if (!signupModal.classList.contains('hidden')) hideModal(signupModal); } });
         nextImageBtn.addEventListener('click', () => {
             const urls = JSON.parse(detailModal.dataset.gallery || '[]');
             if (urls.length <= 1) return;
@@ -722,6 +1201,54 @@
         closeVtBtn.addEventListener('click', hideVirtualToursPage);
         closePannellumBtn.addEventListener('click', hideSample360Tour);
 
+        // --- Booking modal logic ---
+        function openBookingModal(festivalName) {
+            const input = document.getElementById('booking-festival-name');
+            if (input) input.value = festivalName || '';
+            bookingError.textContent = '';
+            showModal(bookingModal);
+        }
+        if (bookingCancel) bookingCancel.addEventListener('click', () => hideModal(bookingModal));
+
+        async function getPublicKeys() {
+            try {
+                const res = await fetch('/__public_keys');
+                return await res.json();
+            } catch { return { stripePublicKey: '' }; }
+        }
+
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            bookingError.textContent = '';
+            const payload = {
+                festivalName: document.getElementById('booking-festival-name').value,
+                name: document.getElementById('booking-name').value,
+                email: document.getElementById('booking-email').value,
+                participants: parseInt(document.getElementById('booking-participants').value, 10),
+                date: document.getElementById('booking-date').value
+            };
+            try {
+                await fetch('/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            } catch (_) {}
+            try {
+                const keys = await getPublicKeys();
+                if (keys.stripePublicKey) {
+                    const resp = await fetch('/api/bookings/create-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const data = await resp.json();
+                    if (data.url) { window.location.href = data.url; return; }
+                }
+                showToast('Booking saved. Payment will be handled onsite.');
+                hideModal(bookingModal);
+            } catch (err) {
+                bookingError.textContent = 'Failed to start payment.';
+            }
+        });
+
+        // Narration controls
+        const narrationAudio = document.getElementById('narration-audio');
+        document.getElementById('narration-play').addEventListener('click', () => { try { narrationAudio.play(); } catch(_) {} });
+        document.getElementById('narration-pause').addEventListener('click', () => { try { narrationAudio.pause(); } catch(_) {} });
+
         if (auth) {
             onAuthStateChanged(auth, user => updateUIForUser(user));
             loginForm.addEventListener('submit', (e) => { e.preventDefault(); signInWithEmailAndPassword(auth, loginForm['login-email'].value, loginForm['login-password'].value).then(() => { hideModal(loginModal); loginForm.reset(); loginError.textContent = ''; }).catch(error => { loginError.textContent = error.message; }); });
@@ -730,13 +1257,268 @@
         }
 
         document.getElementById('discover-link-sidebar').addEventListener('click', (e) => { e.preventDefault(); showDiscoverPage(); closeSidebar(); });
+        document.getElementById('calendar-link-sidebar').addEventListener('click', (e) => { e.preventDefault(); showCalendarPage(); closeSidebar(); });
+        document.getElementById('map-link-sidebar').addEventListener('click', (e) => { e.preventDefault(); showMapPage(); closeSidebar(); });
+        document.getElementById('archives-link-sidebar').addEventListener('click', (e) => { e.preventDefault(); showArchivesPage(); closeSidebar(); });
         document.getElementById('home-link-sidebar').addEventListener('click', (e) => { e.preventDefault(); showHomePage(); closeSidebar(); });
         sidebarOpenBtn.addEventListener('click', openSidebar);
         sidebarCloseBtn.addEventListener('click', closeSidebar);
         mobileMenuBtn.addEventListener('click', openSidebar);
+        if (calendarHeroBtn) { calendarHeroBtn.addEventListener('click', (e) => { e.preventDefault(); showCalendarPage(); }); }
+        if (mapHeroBtn) { mapHeroBtn.addEventListener('click', (e) => { e.preventDefault(); showMapPage(); }); }
+        if (archSearchBtn) { archSearchBtn.addEventListener('click', fetchAndRenderArchives); }
+
+        function populateArchivesFilters() {
+            if (!archMonastery || archMonastery.dataset.ready) return;
+            const options = monasteries.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+            archMonastery.insertAdjacentHTML('beforeend', options);
+            archMonastery.dataset.ready = '1';
+        }
+
+        async function fetchAndRenderArchives() {
+            archivesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500">Loading…</div>';
+            const params = new URLSearchParams();
+            if (archQ.value) params.set('q', archQ.value);
+            if (archType.value) params.set('type', archType.value);
+            if (archLang.value) params.set('language', archLang.value);
+            if (archYear.value) params.set('year', archYear.value);
+            if (archMonastery.value) params.set('monasteryId', archMonastery.value);
+            try {
+                const res = await fetch(`/api/archives?${params.toString()}`);
+                const data = await res.json();
+                renderArchives(Array.isArray(data.archives) ? data.archives : []);
+            } catch {
+                archivesGrid.innerHTML = '<div class="col-span-full text-center text-red-500">Failed to load archives.</div>';
+            }
+        }
+
+        function renderArchives(items) {
+            if (!items.length) {
+                archivesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500">No items found.</div>';
+                return;
+            }
+            archivesGrid.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-md transition';
+                const thumb = item.fileUrl || 'https://placehold.co/600x400?text=Archive';
+                const desc = (item.description || '').slice(0, 100);
+                card.innerHTML = `
+                    <img src="${thumb}" class="w-full h-40 object-cover" alt="${item.title || ''}">
+                    <div class="p-4">
+                        <div class="text-sm text-teal-700 font-semibold">${item.type || ''}</div>
+                        <h4 class="text-lg font-bold mb-1">${item.title || ''}</h4>
+                        <p class="text-gray-600 text-sm">${desc}${desc.length === 100 ? '…' : ''}</p>
+                    </div>
+                `;
+                card.addEventListener('click', () => openArchiveDetail(item));
+                archivesGrid.appendChild(card);
+            });
+        }
+
+        function openArchiveDetail(item) {
+            archDetailTitle.textContent = item.title || '';
+            archDetailImage.src = item.fileUrl || '';
+            const langKey = (currentLanguage || 'en').slice(0,2);
+            const i18nDesc = item.description_i18n && item.description_i18n[langKey];
+            archDetailDesc.textContent = i18nDesc || item.description || '';
+            archDetailType.textContent = item.type || '';
+            archDetailLang.textContent = item.language || '';
+            archDetailDate.textContent = item.date || '';
+            archDetailMon.textContent = item.monasteryName || '';
+            archDetailPeriod.textContent = item.period || '';
+            archDetailMaterial.textContent = item.material || '';
+            archDetailDimensions.textContent = item.dimensions || '';
+            archDetailSignificance.textContent = item.significance || '';
+            archDetailKeywords.textContent = Array.isArray(item.keywords) ? item.keywords.join(', ') : '';
+            if (item.fileUrl) { archDetailDownload.href = item.fileUrl; archDetailDownload.classList.remove('pointer-events-none','opacity-50'); }
+            else { archDetailDownload.removeAttribute('href'); archDetailDownload.classList.add('pointer-events-none','opacity-50'); }
+            showModal(archiveDetailModal);
+        }
+
+        // --- i18n Setup ---
+        const resources = {
+            en: { translation: { hero: { title: 'Find Your Sanctuary', subtitle: 'Discover serene monasteries and spiritual centers in Sikkim.' }, nav: { calendar: 'Cultural Calendar', virtualTours: 'Virtual Tours', enterVirtual: 'Enter 360° Virtual Tour!', map: 'Map View' }, actions: { search: 'Search', cancel: 'Cancel' }, tour: { loading: 'Loading 360° tour…', play: 'Play', pause: 'Pause', noAudio: 'No audio narration available.' }, auth: { login: 'Log In', email: 'Email Address', password: 'Password' }, booking: { title: 'Book Festival', name: 'Full Name', email: 'Email', participants: 'Number of Participants', date: 'Preferred Date', submit: 'Proceed to Pay', bookNow: 'Book Now' } } },
+            hi: { translation: { hero: { title: 'अपना आश्रय खोजें', subtitle: 'सिक्किम के शांत मठों और आध्यात्मिक केंद्रों की खोज करें।' }, nav: { calendar: 'सांस्कृतिक कैलेंडर', virtualTours: 'वर्चुअल टूर', enterVirtual: '360° वर्चुअल टूर में प्रवेश करें!', map: 'मैप व्यू' }, actions: { search: 'खोजें', cancel: 'रद्द करें' }, tour: { loading: '360° टूर लोड हो रहा है…', play: 'चलाएँ', pause: 'रोकें', noAudio: 'ऑडियो वर्णन उपलब्ध नहीं।' }, auth: { login: 'लॉग इन', email: 'ईमेल पता', password: 'पासवर्ड' }, booking: { title: 'त्योहार बुक करें', name: 'पूरा नाम', email: 'ईमेल', participants: 'प्रतिभागियों की संख्या', date: 'पसंदीदा तारीख', submit: 'भुगतान जारी रखें', bookNow: 'अभी बुक करें' } } },
+            ne: { translation: { hero: { title: 'आफ्नो आश्रय खोज्नुहोस्', subtitle: 'सिक्किमका शान्त गुम्बा र आध्यात्मिक केन्द्रहरू पत्ता लगाउनुहोस्।' }, nav: { calendar: 'सांस्कृतिक तालिका', virtualTours: 'भर्चुअल भ्रमण', enterVirtual: '360° भर्चुअल भ्रमणमा प्रवेश गर्नुहोस्!', map: 'नक्सा दृश्य' }, actions: { search: 'खोज्नुहोस्', cancel: 'रद्द गर्नुहोस्' }, tour: { loading: '360° भ्रमण लोड हुँदै…', play: 'चलाउनुहोस्', pause: 'रोक्नुहोस्', noAudio: 'अडियो वर्णन उपलब्ध छैन।' }, auth: { login: 'लगइन', email: 'इमेल ठेगाना', password: 'पासवर्ड' }, booking: { title: 'महोत्सव बुक गर्नुहोस्', name: 'पूरा नाम', email: 'इमेल', participants: 'प्रतिभागी संख्या', date: 'मनपर्ने मिति', submit: 'भुक्तानी गर्न अघि बढ्नुहोस्', bookNow: 'अहिले बुक गर्नुहोस्' } } }
+        };
+
+        i18next.use(i18nextBrowserLanguageDetector).init({ resources, fallbackLng: 'en', detection: { order: ['querystring','localStorage','navigator'], caches: ['localStorage'] } }, () => {
+            currentLanguage = i18next.language || 'en';
+            const select = document.getElementById('language-select');
+            if (select) select.value = currentLanguage.substring(0,2);
+            applyTranslations();
+        });
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const t = i18next.t(key);
+                if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
+                    el.setAttribute('placeholder', t);
+                } else {
+                    el.textContent = t;
+                }
+            });
+        }
+
+        const languageSelect = document.getElementById('language-select');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', () => {
+                const lang = languageSelect.value;
+                i18next.changeLanguage(lang, () => {
+                    currentLanguage = lang;
+                    applyTranslations();
+                });
+            });
+        }
+
+        // --- Map Integration (Leaflet) ---
+        let leafletLoaded = false;
+        let leafletMap = null;
+        let leafletMarkers = {};
+
+        function loadCss(href) {
+            return new Promise((resolve) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = href;
+                link.onload = resolve;
+                document.head.appendChild(link);
+            });
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve) => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = resolve;
+                document.body.appendChild(s);
+            });
+        }
+
+        async function ensureLeafletLoaded() {
+            if (leafletLoaded) return;
+            await loadCss('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+            await loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+            leafletLoaded = true;
+        }
+
+        function initMapIfNeeded() {
+            const loading = document.getElementById('map-loading');
+            if (leafletMap) {
+                setTimeout(() => { if (loading) loading.classList.add('hidden'); leafletMap.invalidateSize(); }, 50);
+                return;
+            }
+            const center = [27.5330, 88.5122];
+            leafletMap = L.map('monasteryMap').setView(center, 9);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(leafletMap);
+
+            const monasteryIcon = L.divIcon({ html: `<svg height="42" viewBox="0 0 24 24" width="30" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#005A9C"></path><circle cx="12" cy="9" r="2.5" fill="white"></circle></svg>`, className: '', iconSize: [30,42], iconAnchor: [15,42], popupAnchor: [0,-42] });
+            const attractionIcon = L.divIcon({ html: `<svg height="42" viewBox="0 0 24 24" width="30" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#28a745"></path><circle cx="12" cy="9" r="2.5" fill="white"></circle></svg>`, className: '', iconSize: [30,42], iconAnchor: [15,42], popupAnchor: [0,-42] });
+
+            const mapLocations = [
+                { name: 'Rumtek Monastery', type: 'Monastery', coords: [27.3058, 88.5364] },
+                { name: 'J.N. Botanical Garden', type: 'Attraction', coords: [27.306, 88.552] },
+                { name: 'Lingdum (Ranka) Monastery', type: 'Monastery', coords: [27.3308, 88.5795] },
+                { name: 'Banjhakri Falls', type: 'Attraction', coords: [27.324, 88.591] },
+                { name: 'Pemayangtse Monastery', type: 'Monastery', coords: [27.3044, 88.2528] },
+                { name: 'Rabdentse Ruins', type: 'Attraction', coords: [27.300, 88.261] },
+                { name: 'Dubdi Monastery', type: 'Monastery', coords: [27.3731, 88.2239] },
+                { name: 'Khecheopalri Lake', type: 'Attraction', coords: [27.371, 88.200] },
+                { name: 'Norbugang Throne', type: 'Attraction', coords: [27.362, 88.225] },
+                { name: 'Tashiding Monastery', type: 'Monastery', coords: [27.3083, 88.2981] },
+                { name: 'Lachen Monastery', type: 'Monastery', coords: [27.7162, 88.5566] },
+                { name: 'Gurudongmar Lake', type: 'Attraction', coords: [28.025, 88.709] },
+                { name: 'Lachung Monastery', type: 'Monastery', coords: [27.6897, 88.7431] },
+                { name: 'Yumthang Valley', type: 'Attraction', coords: [27.828, 88.696] },
+                { name: 'Ralang Monastery', type: 'Monastery', coords: [27.3283, 88.3347] },
+                { name: 'Buddha Park, Ravangla', type: 'Attraction', coords: [27.307, 88.358] },
+                { name: 'Borong Hot Springs', type: 'Attraction', coords: [27.275, 88.383] }
+            ];
+
+            const labelZoomThreshold = 11;
+            function updateLabelVisibility() {
+                const currentZoom = leafletMap.getZoom();
+                const mapContainer = leafletMap.getContainer();
+                if (currentZoom < labelZoomThreshold) { mapContainer.classList.add('hide-labels'); } else { mapContainer.classList.remove('hide-labels'); }
+            }
+
+            mapList.innerHTML = '';
+            mapLocations.forEach(loc => {
+                const icon = loc.type === 'Monastery' ? monasteryIcon : attractionIcon;
+                const marker = L.marker(loc.coords, { icon }).addTo(leafletMap);
+                leafletMarkers[loc.name] = marker;
+                const popupHtml = `<div style="text-align:center;"><strong style="font-size:1.05em;">${loc.name}</strong><br><i>${loc.type}</i><hr style="margin:6px 0;"><sub>Lat: ${loc.coords[0]}, Lng: ${loc.coords[1]}</sub></div>`;
+                marker.bindPopup(popupHtml);
+                marker.bindTooltip(loc.name, { permanent: true, direction: 'top', offset: [0,-42], className: 'permanent-label' });
+
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-3 py-2';
+                btn.innerHTML = `<strong>${loc.name}</strong><br><small>(${loc.type})</small>`;
+                btn.addEventListener('click', () => { leafletMap.flyTo(loc.coords, 14); marker.openPopup(); });
+                mapList.appendChild(btn);
+            });
+
+            leafletMap.on('zoomend', updateLabelVisibility);
+            updateLabelVisibility();
+            setTimeout(() => { if (loading) loading.classList.add('hidden'); leafletMap.invalidateSize(); }, 100);
+        }
 
         // --- Initializations ---
         document.addEventListener('DOMContentLoaded', initializeHeroSlideshow);
+
+        // --- Search (Hero) ---
+        function renderSuggestions(matches, query) {
+            if (!query) { searchSuggestions.classList.add('hidden'); searchSuggestions.innerHTML = ''; return; }
+            if (matches.length === 0) {
+                searchSuggestions.innerHTML = `<div class="px-4 py-3 text-gray-600">Monastery not found</div>`;
+                searchSuggestions.classList.remove('hidden');
+                return;
+            }
+            searchSuggestions.innerHTML = matches.map(m => `<button data-id="${m.id}" class="w-full text-left px-4 py-3 hover:bg-gray-50 focus:bg-gray-50">${m.name}</button>`).join('');
+            searchSuggestions.classList.remove('hidden');
+            searchSuggestions.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id, 10);
+                    navigateToMonastery(id);
+                });
+            });
+        }
+
+        function navigateToMonastery(id) {
+            // Switch to Discover, ensure grid is populated, then open modal
+            showDiscoverPage();
+            // Wait one tick to ensure DOM updated
+            setTimeout(() => {
+                showDetailModal(id);
+                // Scroll to the card position if needed
+                const card = Array.from(monasteryGrid.children).find(c => c.querySelector(`[data-id="${id}"]`));
+                if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            }, 50);
+            // Hide suggestions
+            searchSuggestions.classList.add('hidden');
+        }
+
+        function doSearch() {
+            const q = (heroSearchInput.value || '').trim().toLowerCase();
+            const matches = monasteries.filter(m => m.name.toLowerCase().includes(q));
+            renderSuggestions(matches, q);
+        }
+
+        if (heroSearchInput) {
+            heroSearchInput.addEventListener('input', doSearch, { passive: true });
+            heroSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { doSearch(); }
+                if (e.key === 'Escape') { searchSuggestions.classList.add('hidden'); }
+            });
+        }
+        if (heroSearchBtn) { heroSearchBtn.addEventListener('click', doSearch); }
+        document.addEventListener('click', (e) => {
+            if (!searchSuggestions.contains(e.target) && e.target !== heroSearchInput) {
+                searchSuggestions.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
